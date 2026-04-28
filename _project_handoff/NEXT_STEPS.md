@@ -11,22 +11,65 @@
   - 运行 `git status -sb` 查看本地分支和远端分支关系。
   - 在用户明确允许后再运行 `git push -u origin main`。
 
-### 2. 保持当前 demo 和测试可运行
+### 2. 保持当前 demo、实验脚本和测试可运行
 
-- 目标：确保后续修改不会破坏第一阶段 demo 和第二阶段对比实验。
+- 目标：确保后续修改不会破坏第一阶段 demo、第二阶段对比实验和第三阶段参数实验。
 - 涉及文件：
   - `scripts/run_reach_demo.py`
   - `scripts/run_compare_methods.py`
+  - `scripts/run_parameter_sweep.py`
+  - `scripts/run_damped_jacobian_demo.py`
+  - `scripts/run_singularity_demo.py`
   - `src/robot_arm_target_control_study/`
   - `tests/`
 - 预计验证方式：
   - `python scripts/run_reach_demo.py --target_x 1.2 --target_y 0.6`
   - `python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6`
+  - `python scripts/run_parameter_sweep.py --target_x 1.2 --target_y 0.6`
+  - `python scripts/run_damped_jacobian_demo.py --target_x 1.75 --target_y 0.05`
+  - `python scripts/run_singularity_demo.py`
   - `pytest`
 
 ## P1：重要但可稍后
 
-### 1. 增加解析逆运动学可视化
+### 1. 整理第三阶段实验报告
+
+- 目标：基于参数扫描 CSV 和曲线图，写出一份正式实验报告。
+- 涉及文件：
+  - `docs/07_experiment_report_template.md`
+  - `outputs/logs/parameter_sweep.csv`
+  - `outputs/figures/`
+- 预计验证方式：
+  - 人工阅读报告，确认结论能对应 CSV 和曲线图。
+
+### 2. 增加更多目标点和初始姿态实验
+
+- 目标：验证参数结论是否只适用于当前目标点和初始姿态。
+- 涉及文件：
+  - `scripts/run_parameter_sweep.py`
+  - `scripts/run_damped_jacobian_demo.py`
+  - `tests/test_controller.py`
+  - `src/robot_arm_target_control_study/simulation.py`
+- 预计验证方式：
+  - 新增多个目标点和初始姿态组合。
+  - 运行第三阶段实验脚本。
+  - 运行 `pytest`。
+
+### 3. 增加命令行参数
+
+- 目标：允许用户通过命令行配置连杆长度、初始关节角、最大迭代次数、误差阈值、参数列表和 damping。
+- 涉及文件：
+  - `scripts/run_reach_demo.py`
+  - `scripts/run_compare_methods.py`
+  - `scripts/run_parameter_sweep.py`
+  - `scripts/run_damped_jacobian_demo.py`
+  - `src/robot_arm_target_control_study/simulation.py`
+  - `README.md`
+- 预计验证方式：
+  - 运行带参数的 demo。
+  - 检查输出图和终端结果是否符合预期。
+
+### 4. 增加解析逆运动学可视化
 
 - 目标：在对比实验中画出解析逆运动学 elbow up/down 两种姿态。
 - 涉及文件：
@@ -36,40 +79,6 @@
 - 预计验证方式：
   - 运行 `python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6`。
   - 人工检查输出图片。
-
-### 2. 增加更多目标点测试
-
-- 目标：验证控制器和解析逆运动学对不同目标点的稳定性。
-- 涉及文件：
-  - `tests/test_controller.py`
-  - `tests/test_kinematics.py`
-  - `src/robot_arm_target_control_study/simulation.py`
-- 预计验证方式：
-  - 新增多个可达目标点、不可达目标点和边界目标点测试。
-  - 运行 `pytest`。
-
-### 3. 增加命令行参数
-
-- 目标：允许用户通过命令行配置连杆长度、初始关节角、最大迭代次数和误差阈值。
-- 涉及文件：
-  - `scripts/run_reach_demo.py`
-  - `scripts/run_compare_methods.py`
-  - `src/robot_arm_target_control_study/simulation.py`
-  - `README.md`
-- 预计验证方式：
-  - 运行带参数的 demo。
-  - 检查输出图和终端结果是否符合预期。
-
-### 3. 增加工作空间可视化
-
-- 目标：让用户直观看到二连杆机械臂的可达范围。
-- 涉及文件：
-  - `src/robot_arm_target_control_study/plotting.py`
-  - `scripts/run_reach_demo.py`
-  - `README.md`
-- 预计验证方式：
-  - 生成新的工作空间图片。
-  - 人工检查图片是否能表达最大可达半径。
 
 ## P2：优化项
 

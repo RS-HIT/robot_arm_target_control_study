@@ -66,3 +66,24 @@
 - `_project_handoff/`
 - 项目协作流程
 - 后续任务规划
+
+## 2026-04-28
+
+### 决策内容
+
+第三阶段继续保持 2D 二连杆运动学 demo，不引入动力学仿真框架；新增参数扫描、阻尼雅可比和奇异位形实验。
+
+### 为什么这么做
+
+当前学习重点是理解雅可比控制的数值行为：`gain`、`max_step` 和 `damping` 如何影响收敛速度、稳定性和关节角变化。先在简单 2D 模型中观察这些现象，比过早进入 3D 或动力学仿真更清晰。
+
+### 影响到哪些文件或功能
+
+- `src/robot_arm_target_control_study/controller.py`
+- `src/robot_arm_target_control_study/simulation.py`
+- `src/robot_arm_target_control_study/plotting.py`
+- `scripts/run_parameter_sweep.py`
+- `scripts/run_damped_jacobian_demo.py`
+- `scripts/run_singularity_demo.py`
+- `docs/06_stage3_experiment_guide.md`
+- `docs/07_experiment_report_template.md`

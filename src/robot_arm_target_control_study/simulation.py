@@ -106,3 +106,87 @@ def run_reach_simulation(
         "link2": link2,
         "tolerance": tolerance,
     }
+
+
+def simulate_iterative_control(
+    control_method,
+    initial_theta,
+    target,
+    link1,
+    link2,
+    max_iterations,
+    tolerance,
+    **control_params,
+):
+    """
+    作用：用指定控制方法运行通用迭代仿真，便于比较普通伪逆和阻尼雅可比控制。
+    输入：
+        control_method: 控制函数，可以是 compute_control_step 或 compute_damped_jacobian_step。
+        initial_theta: 长度为 2 的初始关节角。
+        target: 形状为 (2,) 的目标点坐标。
+        link1: 第一根连杆长度。
+        link2: 第二根连杆长度。
+        max_iterations: 最大迭代次数。
+        tolerance: 判断到达目标附近的误差阈值。
+        control_params: 传给控制函数的参数，例如 gain、max_step、damping。
+    输出：
+        history: 字典，包含关节角历史、末端位置历史、误差历史、是否成功、迭代次数和最终误差。
+    """
+    theta = np.array(initial_theta, dtype=float)
+    target = np.array(target, dtype=float)
+
+    theta_history = []
+    end_effector_history = []
+    error_history = []
+    success = False
+    final_error = None
+
+    for iteration in range(max_iterations):
+        positions = forward_kinematics(theta[0], theta[1], link1, link2)
+        end_effector = positions[-1]
+        error_norm = float(np.linalg.norm(target - end_effector))
+
+        theta_history.append(theta.copy())
+        end_effector_history.append(end_effector.copy())
+        error_history.append(error_norm)
+        final_error = error_norm
+
+        if error_norm <= tolerance:
+            success = True
+            break
+
+        if control_method is compute_control_step:
+            # 兼容第一阶段已有的普通雅可比伪逆控制函数：
+            # 它返回的是 delta_theta，所以这里需要手动把增量加到当前关节角上。
+            delta_theta, _, _ = control_method(
+                theta=theta,
+                target=target,
+                end_effector=end_effector,
+                link1=link1,
+                link2=link2,
+                **control_params,
+            )
+            theta = theta + delta_theta
+        else:
+            # 新增的阻尼控制函数直接返回 new_theta，便于实验脚本使用。
+            theta, _, _ = control_method(
+                theta=theta,
+                target=target,
+                link1=link1,
+                link2=link2,
+                **control_params,
+            )
+
+    return {
+        "theta_history": theta_history,
+        "end_effector_history": end_effector_history,
+        "error_history": error_history,
+        "success": success,
+        "iterations": len(error_history),
+        "final_error": final_error,
+        "target": target,
+        "final_theta": theta,
+        "link1": link1,
+        "link2": link2,
+        "tolerance": tolerance,
+    }

@@ -24,6 +24,26 @@ python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6
 
 作用：对比解析逆运动学和雅可比伪逆迭代控制，输出两种方法的最终误差和工作空间图片。
 
+## 运行第三阶段参数实验
+
+```bash
+python scripts/run_parameter_sweep.py --target_x 1.2 --target_y 0.6
+```
+
+作用：扫描多组 `gain` 和 `max_step`，保存 `outputs/logs/parameter_sweep.csv`，并生成参数对比曲线。
+
+```bash
+python scripts/run_damped_jacobian_demo.py --target_x 1.75 --target_y 0.05
+```
+
+作用：对比普通雅可比伪逆和阻尼雅可比控制，观察接近边界目标时的误差和关节角变化。
+
+```bash
+python scripts/run_singularity_demo.py
+```
+
+作用：运行接近伸直边界的奇异位形实验，生成普通伪逆和阻尼雅可比的对比曲线。
+
 ## 运行测试
 
 ```bash
@@ -53,6 +73,16 @@ python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6
 ```
 
 作用：生成 `outputs/figures/workspace.png`。
+
+第三阶段图表由参数实验和阻尼实验自动触发：
+
+```bash
+python scripts/run_parameter_sweep.py --target_x 1.2 --target_y 0.6
+python scripts/run_damped_jacobian_demo.py --target_x 1.75 --target_y 0.05
+python scripts/run_singularity_demo.py
+```
+
+作用：生成 `outputs/logs/parameter_sweep.csv` 和 `outputs/figures/` 下的多组对比曲线。
 
 ## Git 状态检查
 

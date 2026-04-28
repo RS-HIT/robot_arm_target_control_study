@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager
 # 导入字体管理器。
 # 这个模块可以查找系统字体、手动添加字体，用于解决中文乱码问题。
+import numpy as np
 
 
 def configure_chinese_font():
@@ -345,6 +346,138 @@ def plot_workspace(link1, link2, save_path):
     fig.tight_layout()
     fig.savefig(file_path, dpi=150)
     plt.close(fig)
+
+    return file_path
+
+
+def plot_multiple_error_curves(error_histories, labels, save_path, title):
+    """
+    作用：在同一张图中绘制多条误差曲线，用来比较不同参数或不同控制方法。
+    输入：
+        error_histories: 列表，每个元素是一组误差历史数据。
+        labels: 列表，每条曲线对应的图例名称。
+        save_path: 图片保存路径。
+        title: 图片标题。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    plt.figure(figsize=(7, 4))
+    for error_history, label in zip(error_histories, labels):
+        plt.plot(error_history, label=label)
+
+    plt.title(title)
+    plt.xlabel("迭代次数")
+    plt.ylabel("末端误差距离")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_multiple_joint_curves(theta_histories, labels, save_path, title):
+    """
+    作用：在同一张图中比较不同控制方法下 theta1、theta2 的变化趋势。
+    输入：
+        theta_histories: 列表，每个元素是一组关节角历史；每一步包含 theta1 和 theta2。
+        labels: 列表，每组关节角历史对应的图例名称。
+        save_path: 图片保存路径。
+        title: 图片标题。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    plt.figure(figsize=(8, 5))
+    for theta_history, label in zip(theta_histories, labels):
+        theta_array = list(theta_history)
+        if len(theta_array) == 0:
+            continue
+        theta_array = np.array(theta_array, dtype=float)
+        plt.plot(theta_array[:, 0], label=f"{label} theta1")
+        plt.plot(theta_array[:, 1], linestyle="--", label=f"{label} theta2")
+
+    plt.title(title)
+    plt.xlabel("迭代次数")
+    plt.ylabel("关节角 / 弧度")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_error_comparison(error_histories, labels, save_path, title):
+    """
+    作用：绘制多组参数或多种控制方法的误差曲线对比图。
+    输入：
+        error_histories: 多组误差历史数据列表；每一组是一条误差曲线。
+        labels: 每条曲线的标签，例如 "gain=0.2"。
+        save_path: 图片保存路径。
+        title: 图片标题。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    return plot_multiple_error_curves(error_histories, labels, save_path, title)
+
+
+def plot_joint_angle_comparison(theta_histories, labels, save_path, title):
+    """
+    作用：绘制多组参数或多种控制方法的关节角曲线对比图。
+    输入：
+        theta_histories: 多组关节角历史数据列表；每一步包含 theta1 和 theta2。
+        labels: 每组参数或控制方法的标签，例如 "max_step=0.08"。
+        save_path: 图片保存路径。如果文件名包含 theta1，则只画 theta1；包含 theta2，则只画 theta2；否则同时画两个关节角。
+        title: 图片标题。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    name = file_path.stem.lower()
+
+    if "theta1" in name:
+        joint_indices = [0]
+        joint_names = ["theta1"]
+    elif "theta2" in name:
+        joint_indices = [1]
+        joint_names = ["theta2"]
+    else:
+        joint_indices = [0, 1]
+        joint_names = ["theta1", "theta2"]
+
+    plt.figure(figsize=(8, 5))
+    for theta_history, label in zip(theta_histories, labels):
+        if len(theta_history) == 0:
+            continue
+        theta_array = np.array(theta_history, dtype=float)
+        for joint_index, joint_name in zip(joint_indices, joint_names):
+            curve_label = label if len(joint_indices) == 1 else f"{label} {joint_name}"
+            linestyle = "-" if joint_index == 0 else "--"
+            plt.plot(theta_array[:, joint_index], linestyle=linestyle, label=curve_label)
+
+    plt.title(title)
+    plt.xlabel("迭代次数")
+    plt.ylabel("关节角 / 弧度")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
 
     return file_path
 

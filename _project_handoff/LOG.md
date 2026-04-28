@@ -18,3 +18,14 @@
 - 在 `plotting.py` 中新增工作空间图绘制函数。
 - 新增 `docs/05_stage2_learning_guide.md`，解释第二阶段学习目标和阅读顺序。
 - 扩展 `tests/test_kinematics.py`，覆盖可达性判断、解析逆运动学和 elbow up/down 两种构型。
+
+## 2026-04-28
+
+- 第三阶段新增参数敏感性、奇异位形和阻尼雅可比实验工作流。
+- 新增 `scripts/run_parameter_sweep.py`，扫描 `gain` 和 `max_step` 并输出 CSV 与对比曲线。
+- 新增 `scripts/run_damped_jacobian_demo.py`，对比普通伪逆和阻尼雅可比控制。
+- 新增 `scripts/run_singularity_demo.py`，观察接近伸直边界时的控制表现。
+- 在 `controller.py` 中新增阻尼雅可比控制步骤。
+- 在 `simulation.py` 中新增通用迭代仿真函数。
+- 在 `plotting.py` 中新增多组误差曲线和关节角曲线对比函数。
+- 新增 `docs/06_stage3_experiment_guide.md` 和 `docs/07_experiment_report_template.md`。
