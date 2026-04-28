@@ -16,6 +16,14 @@ python scripts/run_reach_demo.py --target_x 1.2 --target_y 0.6
 
 作用：运行 2D 二连杆机械臂目标点控制 demo，目标点为 `(1.2, 0.6)`。程序会执行仿真、保存图片并在终端打印最终结果。
 
+## 运行第二阶段对比实验
+
+```bash
+python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6
+```
+
+作用：对比解析逆运动学和雅可比伪逆迭代控制，输出两种方法的最终误差和工作空间图片。
+
 ## 运行测试
 
 ```bash
@@ -37,6 +45,14 @@ python scripts/run_reach_demo.py --target_x 1.2 --target_y 0.6
 - `outputs/arm_pose.png`
 - `outputs/error_curve.png`
 - `outputs/joint_curve.png`
+
+第二阶段工作空间图由对比脚本自动触发：
+
+```bash
+python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6
+```
+
+作用：生成 `outputs/figures/workspace.png`。
 
 ## Git 状态检查
 

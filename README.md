@@ -34,6 +34,7 @@ robot_arm_target_control_study/
 ├── README.md
 ├── requirements.txt
 ├── scripts/
+│   ├── run_compare_methods.py
 │   └── run_reach_demo.py
 ├── src/
 │   └── robot_arm_target_control_study/
@@ -48,7 +49,8 @@ robot_arm_target_control_study/
 │   ├── assets/
 │   ├── 01_code_reading_notes.md
 │   ├── 02_code_reading_notes.md
-│   └── 02_interview_questions.md
+│   ├── 02_interview_questions.md
+│   └── 05_stage2_learning_guide.md
 └── outputs/
 ```
 
@@ -80,6 +82,35 @@ python scripts/run_reach_demo.py --target_x 1.2 --target_y 0.6
 - 是否到达目标附近。
 - 输出图片路径。
 
+## 第二阶段：解析逆运动学与雅可比伪逆对比
+
+第二阶段在第一阶段基础上增加“解析逆运动学 vs 雅可比伪逆迭代控制”对比实验。运行：
+
+```bash
+python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6
+```
+
+终端会输出：
+
+- 目标点和可达性判断。
+- 解析逆运动学计算出的 `theta1`、`theta2`。
+- 解析逆运动学对应的最终末端位置和误差。
+- 雅可比伪逆迭代控制的最终末端位置、误差和迭代步数。
+- 两种方法的简短对比说明。
+
+解析逆运动学适合结构简单、自由度较少、几何关系清楚的机械臂。它的特点是“直接求解”：只要目标点可达，通常可以直接算出关节角。
+
+雅可比伪逆适合更容易推广到高自由度或复杂机械臂的场景。它的特点是“迭代逼近”：每一步根据末端误差计算关节角增量，逐步靠近目标点，但可能受到初始关节角、步长和奇异位形影响。
+
+两者区别可以简单理解为：
+
+- 解析逆运动学：目标点 -> 几何公式 -> 关节角。
+- 雅可比伪逆控制：目标点 -> 当前误差 -> 关节角小步更新 -> 重复迭代。
+
+第二阶段新增输出：
+
+- `outputs/figures/workspace.png`：二连杆机械臂工作空间图，包含最远可达圆和最近不可达内圆。
+
 ## 运行测试
 
 ```bash
@@ -99,6 +130,7 @@ demo 运行后会把图片保存到 `outputs/`：
 - `arm_pose.png`：机械臂最终姿态图，包含目标点和末端点。
 - `error_curve.png`：末端误差随迭代次数变化的曲线。
 - `joint_curve.png`：两个关节角随迭代次数变化的曲线。
+- `figures/workspace.png`：工作空间图，展示目标点是否可能落在机械臂可达范围内。
 
 README 中展示用的图片放在 `docs/assets/`，避免每次运行 demo 时覆盖首页展示图。
 

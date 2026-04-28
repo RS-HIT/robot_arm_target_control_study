@@ -13,32 +13,47 @@
 
 ### 2. 保持当前 demo 和测试可运行
 
-- 目标：确保后续修改不会破坏第一版可运行状态。
+- 目标：确保后续修改不会破坏第一阶段 demo 和第二阶段对比实验。
 - 涉及文件：
   - `scripts/run_reach_demo.py`
+  - `scripts/run_compare_methods.py`
   - `src/robot_arm_target_control_study/`
   - `tests/`
 - 预计验证方式：
   - `python scripts/run_reach_demo.py --target_x 1.2 --target_y 0.6`
+  - `python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6`
   - `pytest`
 
 ## P1：重要但可稍后
 
-### 1. 增加更多目标点测试
+### 1. 增加解析逆运动学可视化
 
-- 目标：验证控制器对不同可达目标点的收敛稳定性。
+- 目标：在对比实验中画出解析逆运动学 elbow up/down 两种姿态。
+- 涉及文件：
+  - `scripts/run_compare_methods.py`
+  - `src/robot_arm_target_control_study/plotting.py`
+  - `README.md`
+- 预计验证方式：
+  - 运行 `python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6`。
+  - 人工检查输出图片。
+
+### 2. 增加更多目标点测试
+
+- 目标：验证控制器和解析逆运动学对不同目标点的稳定性。
 - 涉及文件：
   - `tests/test_controller.py`
+  - `tests/test_kinematics.py`
   - `src/robot_arm_target_control_study/simulation.py`
 - 预计验证方式：
-  - 新增多个可达目标点测试。
+  - 新增多个可达目标点、不可达目标点和边界目标点测试。
   - 运行 `pytest`。
 
-### 2. 增加命令行参数
+### 3. 增加命令行参数
 
 - 目标：允许用户通过命令行配置连杆长度、初始关节角、最大迭代次数和误差阈值。
 - 涉及文件：
   - `scripts/run_reach_demo.py`
+  - `scripts/run_compare_methods.py`
   - `src/robot_arm_target_control_study/simulation.py`
   - `README.md`
 - 预计验证方式：

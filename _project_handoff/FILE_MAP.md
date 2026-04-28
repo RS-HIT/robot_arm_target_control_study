@@ -9,19 +9,20 @@
 ## 源代码目录
 
 - `src/robot_arm_target_control_study/__init__.py`：Python 包初始化文件。
-- `src/robot_arm_target_control_study/kinematics.py`：正运动学和雅可比矩阵计算。
+- `src/robot_arm_target_control_study/kinematics.py`：正运动学、雅可比矩阵、目标点可达性判断和二连杆解析逆运动学。
 - `src/robot_arm_target_control_study/controller.py`：基于雅可比伪逆的控制步计算，以及单步关节角限幅。
 - `src/robot_arm_target_control_study/simulation.py`：目标点控制仿真循环，负责迭代、记录历史和返回结果。
-- `src/robot_arm_target_control_study/plotting.py`：绘图和保存图片，包括最终姿态图、误差曲线和关节角变化曲线。
+- `src/robot_arm_target_control_study/plotting.py`：绘图和保存图片，包括最终姿态图、误差曲线、关节角变化曲线和工作空间图。
 
 ## 脚本目录
 
 - `scripts/run_reach_demo.py`：命令行 demo 入口，读取目标点参数，运行仿真，保存图片，打印结果。
+- `scripts/run_compare_methods.py`：第二阶段对比入口，比较解析逆运动学和雅可比伪逆迭代控制。
 
 ## 测试目录
 
 - `tests/conftest.py`：pytest 配置，让测试可以导入 `src/` 下的项目代码。
-- `tests/test_kinematics.py`：测试正运动学结果和雅可比矩阵形状。
+- `tests/test_kinematics.py`：测试正运动学结果、雅可比矩阵形状、目标点可达性和解析逆运动学。
 - `tests/test_controller.py`：测试可达目标是否收敛，以及不可达目标是否不会崩溃。
 
 ## 文档目录
@@ -29,6 +30,7 @@
 - `docs/01_code_reading_notes.md`：代码阅读顺序和模块解释。
 - `docs/02_code_reading_notes.md`：项目数据流说明。
 - `docs/02_interview_questions.md`：面试问题和回答参考。
+- `docs/05_stage2_learning_guide.md`：第二阶段学习指示，解释解析逆运动学与雅可比伪逆对比。
 - `docs/progress_report_for_chatgpt.md`：已有进度说明，内容是否继续维护待确认。
 - `docs/assets/`：README 展示用图片。
 
@@ -36,7 +38,7 @@
 
 - `outputs/.gitkeep`：保留空输出目录。
 - `outputs/`：demo 运行时输出目录，会生成姿态图和曲线图。图片默认不提交到 Git。
-- `outputs/figures/`：当前为空，后续是否使用待确认。
+- `outputs/figures/`：第二阶段工作空间图输出目录，保留 `.gitkeep`，生成图片不提交。
 - `outputs/logs/`：日志输出预留目录，已被 `.gitignore` 忽略。
 - `outputs/videos/`：视频或动画输出预留目录，已被 `.gitignore` 忽略。
 

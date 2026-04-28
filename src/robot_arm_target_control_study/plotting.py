@@ -285,6 +285,70 @@ def plot_joint_curve(history, output_dir):
     return file_path
 
 
+def plot_workspace(link1, link2, save_path):
+    """
+    作用：绘制二连杆机械臂的可达工作空间。
+    输入：
+        link1: 第一根连杆长度。
+        link2: 第二根连杆长度。
+        save_path: 图片保存路径，例如 outputs/figures/workspace.png。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    max_reach = link1 + link2
+    min_reach = abs(link1 - link2)
+    margin = 0.2
+    axis_limit = max_reach + margin
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+
+    # 最远可达圆：两根连杆完全伸直时，末端能到达的最大半径。
+    outer_circle = plt.Circle(
+        (0.0, 0.0),
+        max_reach,
+        fill=False,
+        color="tab:blue",
+        linewidth=2,
+        label=f"最远可达圆 r={max_reach:.2f}",
+    )
+    ax.add_patch(outer_circle)
+
+    # 最近不可达内圆：当两根连杆长度不同，离基座太近的区域无法到达。
+    if min_reach > 0:
+        inner_circle = plt.Circle(
+            (0.0, 0.0),
+            min_reach,
+            fill=False,
+            color="tab:red",
+            linestyle="--",
+            linewidth=2,
+            label=f"最近不可达内圆 r={min_reach:.2f}",
+        )
+        ax.add_patch(inner_circle)
+
+    ax.scatter(0.0, 0.0, color="black", s=40, label="基座")
+    ax.axhline(0.0, color="gray", linewidth=1)
+    ax.axvline(0.0, color="gray", linewidth=1)
+    ax.set_xlim(-axis_limit, axis_limit)
+    ax.set_ylim(-axis_limit, axis_limit)
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_title("二连杆机械臂可达工作空间")
+    ax.set_xlabel("x 位置")
+    ax.set_ylabel("y 位置")
+    ax.grid(True)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(file_path, dpi=150)
+    plt.close(fig)
+
+    return file_path
+
+
 def save_all_plots(result, output_dir="outputs"):
     """
     作用：统一保存姿态图、误差曲线和关节角曲线。
