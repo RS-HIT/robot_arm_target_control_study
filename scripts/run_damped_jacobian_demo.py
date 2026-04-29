@@ -16,9 +16,9 @@ from robot_arm_target_control_study.controller import (
 )
 from robot_arm_target_control_study.plotting import (
     plot_error_comparison,
-    plot_joint_angle_comparison,
     plot_multiple_error_curves,
     plot_multiple_joint_curves,
+    plot_single_joint_comparison,
 )
 from robot_arm_target_control_study.simulation import simulate_iterative_control
 
@@ -143,15 +143,17 @@ def save_damping_plots(histories, labels):
         figure_dir / "damping_error_comparison.png",
         "不同 damping 的误差曲线对比",
     )
-    theta1_path = plot_joint_angle_comparison(
+    theta1_path = plot_single_joint_comparison(
         [history["theta_history"] for history in histories],
         labels,
+        0,
         figure_dir / "damping_theta1_comparison.png",
         "不同 damping 的 theta1 变化对比",
     )
-    theta2_path = plot_joint_angle_comparison(
+    theta2_path = plot_single_joint_comparison(
         [history["theta_history"] for history in histories],
         labels,
+        1,
         figure_dir / "damping_theta2_comparison.png",
         "不同 damping 的 theta2 变化对比",
     )

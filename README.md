@@ -40,16 +40,20 @@ robot_arm_target_control_study/
 │   ├── run_compare_methods.py
 │   ├── run_parameter_sweep.py
 │   ├── run_singularity_demo.py
+│   ├── run_trajectory_tracking_demo.py
 │   └── run_reach_demo.py
 ├── src/
 │   └── robot_arm_target_control_study/
 │       ├── controller.py
 │       ├── kinematics.py
 │       ├── plotting.py
-│       └── simulation.py
+│       ├── simulation.py
+│       ├── tracking_controller.py
+│       └── trajectory.py
 ├── tests/
 │   ├── test_controller.py
-│   └── test_kinematics.py
+│   ├── test_kinematics.py
+│   └── test_trajectory.py
 ├── docs/
 │   ├── assets/
 │   ├── 01_code_reading_notes.md
@@ -57,7 +61,10 @@ robot_arm_target_control_study/
 │   ├── 02_interview_questions.md
 │   ├── 05_stage2_learning_guide.md
 │   ├── 06_stage3_experiment_guide.md
-│   └── 07_experiment_report_template.md
+│   ├── 07_experiment_report_template.md
+│   ├── 08_parameter_experiment_report.md
+│   ├── 09_stage4_trajectory_tracking_guide.md
+│   └── 10_pd_control_notes.md
 └── outputs/
 ```
 
@@ -148,6 +155,12 @@ python scripts/run_compare_methods.py --target_x 1.2 --target_y 0.6
 - 高频锯齿：可能控制在目标附近来回震荡。
 - 某个关节变化特别大：说明主要运动压力集中在这个关节上。
 
+和 PID 调参的类比：
+
+- `gain` 类似 P 控制中的 `Kp`，决定误差反馈的修正力度。
+- `max_step` 更像输出限幅或速度限制，不是 `Kp`，它限制每一步最多能改变多少关节角。
+- `damping` 更像数值阻尼、正则化或刹车，用来抑制奇异位形附近的过大更新，不等同于 PID 的 D 项。
+
 运行参数扫描：
 
 ```bash
@@ -188,6 +201,41 @@ python scripts/run_singularity_demo.py
 - `outputs/figures/singularity_error.png`：接近伸直边界时的误差曲线。
 - `outputs/figures/singularity_joint_angles.png`：接近伸直边界时的关节角曲线。
 
+## 第四阶段：轨迹跟踪与 PD 控制思想
+
+第四阶段从“到达一个目标点”升级到“沿着一串目标点运动”。目标点控制只关心末端最后能不能靠近某个点，轨迹跟踪还要关心整个运动过程中实际路径是否贴近期望路径。
+
+本阶段仍然是简化运动学控制，不是完整动力学控制：没有质量、惯量、力矩、电机模型，也不引入 MuJoCo、ROS 或强化学习。
+
+P 控制和 PD 控制的区别：
+
+- P 控制只根据当前位置误差修正：误差越大，修正越大。
+- P + 前馈（`p_ff`）在 P 控制基础上加入期望轨迹速度，更适合入门轨迹跟踪，通常比纯 P 更少滞后。
+- PD 控制在 P + 前馈基础上加入速度误差项，观察实际末端速度和期望速度的差异，用来抑制过快变化和震荡趋势。
+- 本阶段先学 PD，不直接学 PID，是因为 I 项主要用于长期稳态误差补偿，容易引入积分累积和调参复杂度；当前项目先把“误差”和“误差变化速度”理解清楚。
+
+第四阶段修复后的轨迹跟踪使用 resolved-rate 控制：控制器先生成末端速度命令 `x_dot_cmd`，再通过阻尼雅可比伪逆求关节速度 `q_dot`，最后用 `theta = theta + q_dot * dt` 更新关节角。这样避免把速度命令误当成角度增量。
+
+默认 `init_mode=ik_start` 会先用解析逆运动学把机械臂初始化到轨迹起点附近，避免实际轨迹从远处追赶期望轨迹。
+
+运行轨迹跟踪 demo：
+
+```bash
+python scripts/run_trajectory_tracking_demo.py --trajectory line --controller p_ff
+python scripts/run_trajectory_tracking_demo.py --trajectory circle --controller p_ff
+python scripts/run_trajectory_tracking_demo.py --trajectory line --controller pd --kd 0.02
+python scripts/run_trajectory_tracking_demo.py --trajectory line --controller pd --kp 3.0 --kd 0.05 --damping 0.05 --max_joint_speed 1.5
+python scripts/run_trajectory_tracking_demo.py --trajectory circle --controller pd
+```
+
+如果需要研究 PD 参数影响，可以通过 `--kd` 修改速度误差增益。建议先确认 `p_ff` 稳定，再尝试 `--kd 0.0`、`--kd 0.02`、`--kd 0.05`、`--kd 0.1`。
+
+第四阶段输出图片：
+
+- `outputs/figures/trajectory_tracking_path.png`：期望末端轨迹和实际末端轨迹对比。
+- `outputs/figures/trajectory_tracking_error.png`：轨迹跟踪误差随轨迹点变化的曲线。
+- `outputs/figures/trajectory_tracking_joint_angles.png`：跟踪过程中两个关节角的变化曲线。
+
 ## 运行测试
 
 ```bash
@@ -202,6 +250,7 @@ pytest
 - 解析逆运动学是否能回代到目标点。
 - 阻尼雅可比控制输出是否合理，并能降低误差。
 - 通用迭代仿真是否能返回完整历史记录。
+- 轨迹生成、轨迹速度估计和轨迹跟踪 history 是否正确。
 
 ## 输出结果说明
 
@@ -219,6 +268,9 @@ demo 运行后会把图片保存到 `outputs/`：
 - `figures/damping_*_comparison.png`：比较不同阻尼系数。
 - `figures/singularity_error.png`：奇异位形实验误差曲线。
 - `figures/singularity_joint_angles.png`：奇异位形实验关节角曲线。
+- `figures/trajectory_tracking_path.png`：期望轨迹和实际轨迹对比图。
+- `figures/trajectory_tracking_error.png`：轨迹跟踪误差曲线。
+- `figures/trajectory_tracking_joint_angles.png`：轨迹跟踪关节角曲线。
 
 README 中展示用的图片放在 `docs/assets/`，避免每次运行 demo 时覆盖首页展示图。
 

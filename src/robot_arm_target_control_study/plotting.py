@@ -433,6 +433,141 @@ def plot_error_comparison(error_histories, labels, save_path, title):
     return plot_multiple_error_curves(error_histories, labels, save_path, title)
 
 
+def plot_single_joint_comparison(theta_histories, labels, joint_index, save_path, title):
+    """
+    作用：在同一张图中绘制多组 theta1 或 theta2 的变化曲线。
+    输入：
+        theta_histories: 多组关节角历史数据列表；每一步包含 theta1 和 theta2。
+        labels: 每组曲线的标签，例如 "gain=0.2"。
+        joint_index: 0 表示 theta1，1 表示 theta2。
+        save_path: 图片保存路径。
+        title: 图片标题。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    if joint_index not in (0, 1):
+        raise ValueError("joint_index 只能是 0 或 1。")
+
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    joint_name = "theta1" if joint_index == 0 else "theta2"
+
+    plt.figure(figsize=(8, 5))
+    for theta_history, label in zip(theta_histories, labels):
+        if len(theta_history) == 0:
+            continue
+        theta_array = np.array(theta_history, dtype=float)
+        plt.plot(theta_array[:, joint_index], label=label)
+
+    plt.title(title)
+    plt.xlabel("迭代次数")
+    plt.ylabel(f"{joint_name} / 弧度")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_trajectory_tracking(desired_trajectory, actual_trajectory, save_path):
+    """
+    作用：在同一张图中绘制期望末端轨迹和实际末端轨迹。
+    输入：
+        desired_trajectory: 形状为 (N, 2) 的期望轨迹。
+        actual_trajectory: 形状为 (N, 2) 的实际末端轨迹。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    desired_trajectory = np.array(desired_trajectory, dtype=float)
+    actual_trajectory = np.array(actual_trajectory, dtype=float)
+
+    plt.figure(figsize=(6, 6))
+    plt.plot(desired_trajectory[:, 0], desired_trajectory[:, 1], label="期望轨迹")
+    plt.plot(actual_trajectory[:, 0], actual_trajectory[:, 1], label="实际轨迹")
+    plt.scatter(desired_trajectory[0, 0], desired_trajectory[0, 1], marker="o", label="期望起点")
+    plt.scatter(desired_trajectory[-1, 0], desired_trajectory[-1, 1], marker="x", label="期望终点")
+    plt.scatter(actual_trajectory[0, 0], actual_trajectory[0, 1], marker="s", label="实际起点")
+    plt.scatter(actual_trajectory[-1, 0], actual_trajectory[-1, 1], marker="^", label="实际终点")
+    plt.title("末端轨迹跟踪效果")
+    plt.xlabel("x 位置")
+    plt.ylabel("y 位置")
+    plt.axis("equal")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_tracking_error(error_history, save_path):
+    """
+    作用：绘制轨迹跟踪误差随时间步变化的曲线。
+    输入：
+        error_history: 每个轨迹点对应的末端跟踪误差列表。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    plt.figure(figsize=(7, 4))
+    plt.plot(error_history, label="跟踪误差")
+    plt.title("轨迹跟踪误差曲线")
+    plt.xlabel("轨迹点序号")
+    plt.ylabel("误差距离")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_tracking_joint_angles(theta_history, save_path):
+    """
+    作用：绘制轨迹跟踪过程中 theta1 和 theta2 的变化曲线。
+    输入：
+        theta_history: 每一步的关节角历史；每个元素包含 theta1 和 theta2。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    theta_array = np.array(theta_history, dtype=float)
+
+    plt.figure(figsize=(7, 4))
+    plt.plot(theta_array[:, 0], label="theta1")
+    plt.plot(theta_array[:, 1], label="theta2")
+    plt.title("轨迹跟踪关节角变化")
+    plt.xlabel("轨迹点序号")
+    plt.ylabel("关节角 / 弧度")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
 def plot_joint_angle_comparison(theta_histories, labels, save_path, title):
     """
     作用：绘制多组参数或多种控制方法的关节角曲线对比图。

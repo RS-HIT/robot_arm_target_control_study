@@ -14,7 +14,7 @@ sys.path.insert(0, str(SRC_DIR))
 from robot_arm_target_control_study.controller import compute_control_step
 from robot_arm_target_control_study.plotting import (
     plot_error_comparison,
-    plot_joint_angle_comparison,
+    plot_single_joint_comparison,
 )
 from robot_arm_target_control_study.simulation import simulate_iterative_control
 
@@ -175,15 +175,17 @@ def save_comparison_plots(comparisons):
         figure_dir / "gain_error_comparison.png",
         f"不同 gain 的误差曲线对比（{gain_fixed}）",
     )
-    plot_files["gain_theta1"] = plot_joint_angle_comparison(
+    plot_files["gain_theta1"] = plot_single_joint_comparison(
         [history["theta_history"] for history in gain_histories],
         gain_labels,
+        0,
         figure_dir / "gain_theta1_comparison.png",
         f"不同 gain 的 theta1 变化对比（{gain_fixed}）",
     )
-    plot_files["gain_theta2"] = plot_joint_angle_comparison(
+    plot_files["gain_theta2"] = plot_single_joint_comparison(
         [history["theta_history"] for history in gain_histories],
         gain_labels,
+        1,
         figure_dir / "gain_theta2_comparison.png",
         f"不同 gain 的 theta2 变化对比（{gain_fixed}）",
     )
@@ -197,15 +199,17 @@ def save_comparison_plots(comparisons):
         figure_dir / "max_step_error_comparison.png",
         f"不同 max_step 的误差曲线对比（{max_step_fixed}）",
     )
-    plot_files["max_step_theta1"] = plot_joint_angle_comparison(
+    plot_files["max_step_theta1"] = plot_single_joint_comparison(
         [history["theta_history"] for history in max_step_histories],
         max_step_labels,
+        0,
         figure_dir / "max_step_theta1_comparison.png",
         f"不同 max_step 的 theta1 变化对比（{max_step_fixed}）",
     )
-    plot_files["max_step_theta2"] = plot_joint_angle_comparison(
+    plot_files["max_step_theta2"] = plot_single_joint_comparison(
         [history["theta_history"] for history in max_step_histories],
         max_step_labels,
+        1,
         figure_dir / "max_step_theta2_comparison.png",
         f"不同 max_step 的 theta2 变化对比（{max_step_fixed}）",
     )
