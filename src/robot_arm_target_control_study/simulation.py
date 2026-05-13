@@ -238,12 +238,13 @@ def simulate_trajectory_tracking(
     q_dot_clipped_history = []
     position_error_history = []
     velocity_error_history = []
+    time_history = []
     prev_current_xy = None
     max_joint_speed = control_params.get("max_joint_speed", 1.5)
     dt_inner = dt / inner_steps
 
-    for desired_xy, velocity_xy in zip(desired_trajectory, desired_velocity):
-        for _ in range(inner_steps):
+    for point_index, (desired_xy, velocity_xy) in enumerate(zip(desired_trajectory, desired_velocity)):
+        for inner_index in range(inner_steps):
             if controller_type == "p":
                 step_velocity = np.zeros(2, dtype=float)
                 theta, _, _, q_dot, position_error = compute_resolved_rate_p_step(
@@ -310,6 +311,7 @@ def simulate_trajectory_tracking(
             q_dot_clipped_history.append(q_dot_clipped)
             position_error_history.append(updated_error_vector.copy())
             velocity_error_history.append(np.array(velocity_error, dtype=float).copy())
+            time_history.append((point_index * inner_steps + inner_index) * dt_inner)
             prev_current_xy = updated_xy.copy()
 
     error_array = np.array(error_history, dtype=float)
@@ -331,6 +333,7 @@ def simulate_trajectory_tracking(
         "q_dot_clipped_count": int(sum(q_dot_clipped_history)),
         "position_error": position_error_history,
         "velocity_error": velocity_error_history,
+        "time_history": np.array(time_history, dtype=float),
         "success": average_error < 0.05,
         "average_error": average_error,
         "max_error": max_error,

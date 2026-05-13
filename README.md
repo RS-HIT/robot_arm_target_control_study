@@ -40,6 +40,7 @@ robot_arm_target_control_study/
 │   ├── run_compare_methods.py
 │   ├── run_parameter_sweep.py
 │   ├── run_singularity_demo.py
+│   ├── run_time_scaling_sweep.py
 │   ├── run_trajectory_space_compare.py
 │   ├── run_trajectory_tracking_demo.py
 │   └── run_reach_demo.py
@@ -50,11 +51,13 @@ robot_arm_target_control_study/
 │       ├── plotting.py
 │       ├── simulation.py
 │       ├── tracking_controller.py
-│       └── trajectory.py
+│       ├── trajectory.py
+│       └── utils.py
 ├── tests/
 │   ├── test_controller.py
 │   ├── test_kinematics.py
-│   └── test_trajectory.py
+│   ├── test_trajectory.py
+│   └── test_trajectory_metrics.py
 ├── docs/
 │   ├── assets/
 │   ├── 01_code_reading_notes.md
@@ -67,7 +70,9 @@ robot_arm_target_control_study/
 │   ├── 09_stage4_trajectory_tracking_guide.md
 │   ├── 10_pd_control_notes.md
 │   ├── 11_stage5_trajectory_planning_guide.md
-│   └── 12_trajectory_planning_notes.md
+│   ├── 12_trajectory_planning_notes.md
+│   ├── 13_stage6_constraint_aware_trajectory_guide.md
+│   └── 14_joint_vs_cartesian_summary.md
 └── outputs/
 ```
 
@@ -267,6 +272,41 @@ python scripts/run_trajectory_space_compare.py --start_x 0.8 --start_y 0.4 --goa
 - `outputs/figures/trajectory_space_acceleration_compare.png`：两种方法下的关节加速度对比。
 - `outputs/logs/trajectory_space_compare.csv`：路径长度、最大关节速度、最大关节加速度、RMS 指标和最终误差。
 
+## 第六阶段：约束感知轨迹对比与轨迹重定时
+
+第六阶段在第五阶段基础上加入真实时间轴、速度/加速度约束检查和轨迹重定时。
+
+为什么速度和加速度约束重要：
+
+- 关节速度过大，说明机械臂可能跟不上轨迹。
+- 关节加速度过大，说明动作变化太突然，对电机和结构不友好。
+- 即使末端路径看起来正确，关节层面的速度和加速度也可能不适合执行。
+
+为什么要用真实时间轴：
+
+- 只用轨迹点序号时，关节空间轨迹和带 `inner_steps` 的笛卡尔跟踪点数不同，比较不公平。
+- 使用时间 / s 作为横轴后，可以比较同一段真实运动时间内的关节角、速度和加速度。
+
+`total_time` 表示整条轨迹希望用多少秒完成。通常 `total_time` 越大，轨迹走得越慢，关节速度和加速度越低，动作也更平滑。
+
+运行命令：
+
+```bash
+python scripts/run_trajectory_space_compare.py --total_time 5.0
+python scripts/run_time_scaling_sweep.py
+python scripts/run_time_scaling_sweep.py --total_times 3 5 8 10
+```
+
+CSV 指标说明：
+
+- `max_joint_velocity`：最大关节速度。
+- `max_joint_acceleration`：最大关节加速度。
+- `velocity_violation_count`：超过速度限制的采样数量。
+- `acceleration_violation_count`：超过加速度限制的采样数量。
+- `mean_path_deviation` / `max_path_deviation`：末端路径相对起点-终点直线的平均/最大偏差。
+
+当前阶段仍然只是运动学层面分析，不是完整动力学仿真；它帮助建立“轨迹是否平滑、是否可能执行”的直觉。
+
 ## 运行测试
 
 ```bash
@@ -283,6 +323,7 @@ pytest
 - 通用迭代仿真是否能返回完整历史记录。
 - 轨迹生成、轨迹速度估计和轨迹跟踪 history 是否正确。
 - 时间缩放、关节空间轨迹、离散速度和轨迹空间对比指标是否正确。
+- 约束检查、路径偏差、真实时间轴和 total_time 扫描是否正确。
 
 ## 输出结果说明
 
@@ -308,6 +349,10 @@ demo 运行后会把图片保存到 `outputs/`：
 - `figures/trajectory_space_velocity_compare.png`：关节速度对比。
 - `figures/trajectory_space_acceleration_compare.png`：关节加速度对比。
 - `logs/trajectory_space_compare.csv`：第五阶段轨迹空间对比指标。
+- `logs/time_scaling_sweep.csv`：不同 `total_time` 下的约束和轨迹指标。
+- `figures/time_scaling_velocity_compare.png`：不同 `total_time` 下最大关节速度对比。
+- `figures/time_scaling_acceleration_compare.png`：不同 `total_time` 下最大关节加速度对比。
+- `figures/time_scaling_metric_summary.png`：速度、加速度和加速度 RMS 汇总图。
 
 README 中展示用的图片放在 `docs/assets/`，避免每次运行 demo 时覆盖首页展示图。
 

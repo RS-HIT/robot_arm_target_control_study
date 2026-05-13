@@ -708,6 +708,197 @@ def plot_joint_acceleration_compare(joint_acceleration, cartesian_acceleration, 
     return file_path
 
 
+def plot_time_based_joint_compare(joint_time, joint_theta_history, cartesian_time, cartesian_theta_history, save_path):
+    """
+    作用：用真实时间作为横轴，比较关节空间轨迹和笛卡尔空间跟踪下的 theta1、theta2。
+    输入：
+        joint_time: 关节空间轨迹时间轴，单位秒。
+        joint_theta_history: 关节空间轨迹中的关节角历史。
+        cartesian_time: 笛卡尔空间跟踪时间轴，单位秒。
+        cartesian_theta_history: 笛卡尔空间跟踪中的关节角历史。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    joint_theta = np.array(joint_theta_history, dtype=float)
+    cartesian_theta = np.array(cartesian_theta_history, dtype=float)
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(joint_time, joint_theta[:, 0], label="关节空间 theta1")
+    plt.plot(joint_time, joint_theta[:, 1], label="关节空间 theta2")
+    plt.plot(cartesian_time, cartesian_theta[:, 0], linestyle="--", label="笛卡尔跟踪 theta1")
+    plt.plot(cartesian_time, cartesian_theta[:, 1], linestyle="--", label="笛卡尔跟踪 theta2")
+    plt.title("关节角轨迹对比")
+    plt.xlabel("时间 / s")
+    plt.ylabel("关节角 / 弧度")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_time_based_velocity_compare(joint_time, joint_velocity, cartesian_time, cartesian_velocity, save_path):
+    """
+    作用：用真实时间作为横轴，比较两种方法下的关节速度。
+    输入：
+        joint_time: 关节空间轨迹时间轴，单位秒。
+        joint_velocity: 关节空间轨迹的关节速度。
+        cartesian_time: 笛卡尔空间跟踪时间轴，单位秒。
+        cartesian_velocity: 笛卡尔空间跟踪的关节速度。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    joint_velocity = np.array(joint_velocity, dtype=float)
+    cartesian_velocity = np.array(cartesian_velocity, dtype=float)
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(joint_time, joint_velocity[:, 0], label="关节空间 theta1 速度")
+    plt.plot(joint_time, joint_velocity[:, 1], label="关节空间 theta2 速度")
+    plt.plot(cartesian_time, cartesian_velocity[:, 0], linestyle="--", label="笛卡尔跟踪 theta1 速度")
+    plt.plot(cartesian_time, cartesian_velocity[:, 1], linestyle="--", label="笛卡尔跟踪 theta2 速度")
+    plt.title("关节速度对比")
+    plt.xlabel("时间 / s")
+    plt.ylabel("关节速度 / rad/s")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_time_based_acceleration_compare(joint_time, joint_acceleration, cartesian_time, cartesian_acceleration, save_path):
+    """
+    作用：用真实时间作为横轴，比较两种方法下的关节加速度。
+    输入：
+        joint_time: 关节空间轨迹时间轴，单位秒。
+        joint_acceleration: 关节空间轨迹的关节加速度。
+        cartesian_time: 笛卡尔空间跟踪时间轴，单位秒。
+        cartesian_acceleration: 笛卡尔空间跟踪的关节加速度。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    joint_acceleration = np.array(joint_acceleration, dtype=float)
+    cartesian_acceleration = np.array(cartesian_acceleration, dtype=float)
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(joint_time, joint_acceleration[:, 0], label="关节空间 theta1 加速度")
+    plt.plot(joint_time, joint_acceleration[:, 1], label="关节空间 theta2 加速度")
+    plt.plot(cartesian_time, cartesian_acceleration[:, 0], linestyle="--", label="笛卡尔跟踪 theta1 加速度")
+    plt.plot(cartesian_time, cartesian_acceleration[:, 1], linestyle="--", label="笛卡尔跟踪 theta2 加速度")
+    plt.title("关节加速度对比")
+    plt.xlabel("时间 / s")
+    plt.ylabel("关节加速度 / rad/s^2")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_time_scaling_metrics(rows, save_path):
+    """
+    作用：比较不同 total_time 下的最大速度、最大加速度和加速度 RMS。
+    输入：
+        rows: 指标字典列表，至少包含 total_time、method、max_joint_velocity、max_joint_acceleration、joint_acceleration_rms。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    methods = sorted({row["method"] for row in rows})
+    metrics = [
+        ("max_joint_velocity", "最大速度 / rad/s"),
+        ("max_joint_acceleration", "最大加速度 / rad/s^2"),
+        ("joint_acceleration_rms", "加速度 RMS / rad/s^2"),
+    ]
+
+    fig, axes = plt.subplots(3, 1, figsize=(8, 9), sharex=True)
+    for ax, (metric_name, ylabel) in zip(axes, metrics):
+        for method in methods:
+            method_rows = sorted([row for row in rows if row["method"] == method], key=lambda item: item["total_time"])
+            ax.plot(
+                [row["total_time"] for row in method_rows],
+                [row[metric_name] for row in method_rows],
+                marker="o",
+                label=method,
+            )
+        ax.set_ylabel(ylabel)
+        ax.grid(True)
+        ax.legend()
+
+    axes[-1].set_xlabel("总运动时间 / s")
+    fig.suptitle("不同 total_time 下的速度与加速度指标")
+    fig.tight_layout()
+    fig.savefig(file_path, dpi=150)
+    plt.close(fig)
+
+    return file_path
+
+
+def plot_time_scaling_metric(rows, metric_name, save_path, title, ylabel):
+    """
+    作用：比较不同 total_time 下某一个速度或加速度指标。
+    输入：
+        rows: 指标字典列表，至少包含 total_time、method 和 metric_name 对应字段。
+        metric_name: 要绘制的指标名称。
+        save_path: 图片保存路径。
+        title: 图片标题。
+        ylabel: y 轴名称。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    methods = sorted({row["method"] for row in rows})
+
+    plt.figure(figsize=(8, 5))
+    for method in methods:
+        method_rows = sorted([row for row in rows if row["method"] == method], key=lambda item: item["total_time"])
+        plt.plot(
+            [row["total_time"] for row in method_rows],
+            [row[metric_name] for row in method_rows],
+            marker="o",
+            label=method,
+        )
+
+    plt.title(title)
+    plt.xlabel("总运动时间 / s")
+    plt.ylabel(ylabel)
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
 def plot_joint_angle_comparison(theta_histories, labels, save_path, title):
     """
     作用：绘制多组参数或多种控制方法的关节角曲线对比图。
