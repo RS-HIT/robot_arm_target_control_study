@@ -13,8 +13,12 @@ from robot_arm_target_control_study.simulation import simulate_trajectory_tracki
 from robot_arm_target_control_study.tracking_controller import compute_resolved_rate_p_step
 from robot_arm_target_control_study.trajectory import (
     compute_trajectory_velocity,
+    compute_discrete_velocity,
+    cubic_time_scaling,
     generate_circle_trajectory,
+    generate_joint_space_trajectory,
     generate_line_trajectory,
+    quintic_time_scaling,
 )
 
 
@@ -207,3 +211,74 @@ def test_run_trajectory_args_accept_pd_tuning_params():
     assert args.damping == 0.05
     assert args.max_joint_speed == 1.5
     assert args.inner_steps == 5
+
+
+def test_cubic_time_scaling_start_end():
+    """
+    作用：检查三次时间缩放起点为 0、终点为 1。
+    输入：
+        无，测试内部指定采样点数。
+    输出：
+        无，通过断言判断结果。
+    """
+    s = cubic_time_scaling(20)
+
+    assert np.isclose(s[0], 0.0)
+    assert np.isclose(s[-1], 1.0)
+
+
+def test_quintic_time_scaling_start_end():
+    """
+    作用：检查五次时间缩放起点为 0、终点为 1。
+    输入：
+        无，测试内部指定采样点数。
+    输出：
+        无，通过断言判断结果。
+    """
+    s = quintic_time_scaling(20)
+
+    assert np.isclose(s[0], 0.0)
+    assert np.isclose(s[-1], 1.0)
+
+
+def test_generate_joint_space_trajectory_shape():
+    """
+    作用：检查关节空间轨迹输出形状是否为 (num_points, 2)。
+    输入：
+        无，测试内部给定起止关节角。
+    输出：
+        无，通过断言判断结果。
+    """
+    trajectory = generate_joint_space_trajectory([0.1, 0.2], [0.5, 0.8], 30)
+
+    assert trajectory.shape == (30, 2)
+
+
+def test_generate_joint_space_trajectory_start_goal():
+    """
+    作用：检查关节空间轨迹第一行等于起点，最后一行等于终点。
+    输入：
+        无，测试内部给定起止关节角。
+    输出：
+        无，通过断言判断结果。
+    """
+    start_theta = np.array([0.1, 0.2])
+    goal_theta = np.array([0.5, 0.8])
+    trajectory = generate_joint_space_trajectory(start_theta, goal_theta, 30, method="quintic")
+
+    assert np.allclose(trajectory[0], start_theta)
+    assert np.allclose(trajectory[-1], goal_theta)
+
+
+def test_discrete_velocity_shape():
+    """
+    作用：检查离散速度计算结果形状是否和输入一致。
+    输入：
+        无，测试内部给定二维关节角序列。
+    输出：
+        无，通过断言判断结果。
+    """
+    values = generate_joint_space_trajectory([0.1, 0.2], [0.5, 0.8], 30)
+    velocity = compute_discrete_velocity(values, dt=0.05)
+
+    assert velocity.shape == values.shape

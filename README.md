@@ -40,6 +40,7 @@ robot_arm_target_control_study/
 │   ├── run_compare_methods.py
 │   ├── run_parameter_sweep.py
 │   ├── run_singularity_demo.py
+│   ├── run_trajectory_space_compare.py
 │   ├── run_trajectory_tracking_demo.py
 │   └── run_reach_demo.py
 ├── src/
@@ -64,7 +65,9 @@ robot_arm_target_control_study/
 │   ├── 07_experiment_report_template.md
 │   ├── 08_parameter_experiment_report.md
 │   ├── 09_stage4_trajectory_tracking_guide.md
-│   └── 10_pd_control_notes.md
+│   ├── 10_pd_control_notes.md
+│   ├── 11_stage5_trajectory_planning_guide.md
+│   └── 12_trajectory_planning_notes.md
 └── outputs/
 ```
 
@@ -236,6 +239,34 @@ python scripts/run_trajectory_tracking_demo.py --trajectory circle --controller 
 - `outputs/figures/trajectory_tracking_error.png`：轨迹跟踪误差随轨迹点变化的曲线。
 - `outputs/figures/trajectory_tracking_joint_angles.png`：跟踪过程中两个关节角的变化曲线。
 
+## 第五阶段：关节空间轨迹与笛卡尔空间轨迹对比
+
+第五阶段区分两个概念：
+
+- 轨迹规划：先生成一串希望执行的位置、速度或关节角序列。
+- 轨迹跟踪：控制机械臂尽量沿着规划好的轨迹运动。
+
+关节空间轨迹是在 `theta1/theta2` 上直接插值，优点是关节角变化容易设计得平滑；缺点是末端路径不一定是直线。
+
+笛卡尔空间轨迹是在末端 `x/y` 空间中规划路径，例如让末端沿直线走；优点是末端路径直观，缺点是对应到关节空间后，关节速度和加速度可能更复杂。
+
+速度和加速度很重要，因为真实机械臂不能只接收一串位置点。速度过大表示关节可能跟不上，加速度过大表示动作可能突然、对电机和结构不友好。
+
+运行对比脚本：
+
+```bash
+python scripts/run_trajectory_space_compare.py
+python scripts/run_trajectory_space_compare.py --start_x 0.8 --start_y 0.4 --goal_x 1.2 --goal_y 0.6 --method quintic
+```
+
+第五阶段输出：
+
+- `outputs/figures/trajectory_space_path_compare.png`：期望直线、关节空间末端路径、笛卡尔跟踪路径对比。
+- `outputs/figures/trajectory_space_theta_compare.png`：两种方法下的关节角变化对比。
+- `outputs/figures/trajectory_space_velocity_compare.png`：两种方法下的关节速度对比。
+- `outputs/figures/trajectory_space_acceleration_compare.png`：两种方法下的关节加速度对比。
+- `outputs/logs/trajectory_space_compare.csv`：路径长度、最大关节速度、最大关节加速度、RMS 指标和最终误差。
+
 ## 运行测试
 
 ```bash
@@ -251,6 +282,7 @@ pytest
 - 阻尼雅可比控制输出是否合理，并能降低误差。
 - 通用迭代仿真是否能返回完整历史记录。
 - 轨迹生成、轨迹速度估计和轨迹跟踪 history 是否正确。
+- 时间缩放、关节空间轨迹、离散速度和轨迹空间对比指标是否正确。
 
 ## 输出结果说明
 
@@ -271,6 +303,11 @@ demo 运行后会把图片保存到 `outputs/`：
 - `figures/trajectory_tracking_path.png`：期望轨迹和实际轨迹对比图。
 - `figures/trajectory_tracking_error.png`：轨迹跟踪误差曲线。
 - `figures/trajectory_tracking_joint_angles.png`：轨迹跟踪关节角曲线。
+- `figures/trajectory_space_path_compare.png`：关节空间和笛卡尔空间路径对比。
+- `figures/trajectory_space_theta_compare.png`：关节角轨迹对比。
+- `figures/trajectory_space_velocity_compare.png`：关节速度对比。
+- `figures/trajectory_space_acceleration_compare.png`：关节加速度对比。
+- `logs/trajectory_space_compare.csv`：第五阶段轨迹空间对比指标。
 
 README 中展示用的图片放在 `docs/assets/`，避免每次运行 demo 时覆盖首页展示图。
 

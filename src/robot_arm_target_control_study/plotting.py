@@ -568,6 +568,146 @@ def plot_tracking_joint_angles(theta_history, save_path):
     return file_path
 
 
+def plot_path_compare(desired_line, joint_space_path, cartesian_actual_path, save_path):
+    """
+    作用：比较期望直线、关节空间插值得到的末端路径、笛卡尔空间跟踪得到的实际路径。
+    输入：
+        desired_line: 形状为 (N, 2) 的期望直线末端轨迹。
+        joint_space_path: 关节空间轨迹经正运动学得到的末端路径。
+        cartesian_actual_path: 笛卡尔空间轨迹跟踪得到的实际末端路径。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    desired_line = np.array(desired_line, dtype=float)
+    joint_space_path = np.array(joint_space_path, dtype=float)
+    cartesian_actual_path = np.array(cartesian_actual_path, dtype=float)
+
+    plt.figure(figsize=(6, 6))
+    plt.plot(desired_line[:, 0], desired_line[:, 1], label="期望直线")
+    plt.plot(joint_space_path[:, 0], joint_space_path[:, 1], label="关节空间路径")
+    plt.plot(cartesian_actual_path[:, 0], cartesian_actual_path[:, 1], label="笛卡尔跟踪路径")
+    plt.scatter(desired_line[0, 0], desired_line[0, 1], marker="o", label="起点")
+    plt.scatter(desired_line[-1, 0], desired_line[-1, 1], marker="x", label="终点")
+    plt.title("关节空间轨迹 vs 笛卡尔空间轨迹")
+    plt.xlabel("x 位置")
+    plt.ylabel("y 位置")
+    plt.axis("equal")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_joint_trajectory_compare(joint_theta_history, cartesian_theta_history, save_path):
+    """
+    作用：比较关节空间轨迹和笛卡尔空间跟踪下 theta1、theta2 的变化。
+    输入：
+        joint_theta_history: 关节空间轨迹中的关节角历史。
+        cartesian_theta_history: 笛卡尔空间跟踪中的关节角历史。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    joint_theta = np.array(joint_theta_history, dtype=float)
+    cartesian_theta = np.array(cartesian_theta_history, dtype=float)
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(joint_theta[:, 0], label="关节空间 theta1")
+    plt.plot(joint_theta[:, 1], label="关节空间 theta2")
+    plt.plot(cartesian_theta[:, 0], linestyle="--", label="笛卡尔跟踪 theta1")
+    plt.plot(cartesian_theta[:, 1], linestyle="--", label="笛卡尔跟踪 theta2")
+    plt.title("关节角轨迹对比")
+    plt.xlabel("轨迹点序号")
+    plt.ylabel("关节角 / 弧度")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_joint_velocity_compare(joint_velocity, cartesian_velocity, save_path):
+    """
+    作用：比较关节空间轨迹和笛卡尔空间跟踪下的关节速度。
+    输入：
+        joint_velocity: 关节空间轨迹的关节速度数组。
+        cartesian_velocity: 笛卡尔空间跟踪的关节速度数组。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    joint_velocity = np.array(joint_velocity, dtype=float)
+    cartesian_velocity = np.array(cartesian_velocity, dtype=float)
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(joint_velocity[:, 0], label="关节空间 theta1 速度")
+    plt.plot(joint_velocity[:, 1], label="关节空间 theta2 速度")
+    plt.plot(cartesian_velocity[:, 0], linestyle="--", label="笛卡尔跟踪 theta1 速度")
+    plt.plot(cartesian_velocity[:, 1], linestyle="--", label="笛卡尔跟踪 theta2 速度")
+    plt.title("关节速度对比")
+    plt.xlabel("轨迹点序号")
+    plt.ylabel("关节速度 / rad/s")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
+def plot_joint_acceleration_compare(joint_acceleration, cartesian_acceleration, save_path):
+    """
+    作用：比较关节空间轨迹和笛卡尔空间跟踪下的关节加速度。
+    输入：
+        joint_acceleration: 关节空间轨迹的关节加速度数组。
+        cartesian_acceleration: 笛卡尔空间跟踪的关节加速度数组。
+        save_path: 图片保存路径。
+    输出：
+        file_path: 保存图片的 Path。
+    """
+    configure_chinese_font()
+
+    file_path = Path(save_path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    joint_acceleration = np.array(joint_acceleration, dtype=float)
+    cartesian_acceleration = np.array(cartesian_acceleration, dtype=float)
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(joint_acceleration[:, 0], label="关节空间 theta1 加速度")
+    plt.plot(joint_acceleration[:, 1], label="关节空间 theta2 加速度")
+    plt.plot(cartesian_acceleration[:, 0], linestyle="--", label="笛卡尔跟踪 theta1 加速度")
+    plt.plot(cartesian_acceleration[:, 1], linestyle="--", label="笛卡尔跟踪 theta2 加速度")
+    plt.title("关节加速度对比")
+    plt.xlabel("轨迹点序号")
+    plt.ylabel("关节加速度 / rad/s^2")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(file_path, dpi=150)
+    plt.close()
+
+    return file_path
+
+
 def plot_joint_angle_comparison(theta_histories, labels, save_path, title):
     """
     作用：绘制多组参数或多种控制方法的关节角曲线对比图。
